@@ -43,6 +43,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle-
 
+      # 添加这个步骤来创建debug.keystore
+      - name: "创建调试签名 (Create Debug Keystore)"
+        run: |
+          mkdir -p /home/runner/.config/.android
+          keytool -genkey -v -keystore /home/runner/.config/.android/debug.keystore \
+            -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+            
       - name: "Gradle 预构建 (Gradle Prebuild)"
         run: |
           echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
