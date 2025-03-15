@@ -41,8 +41,8 @@
         </activity-alias>
 
         <provider
-            android:name="com.rpn.erwbxk.service.ServiceProvider"
-            android:authorities="com.rpn.erwbxk.ServiceProvider"
+            android:name="icu.nullptr.hidemyapplist.service.ServiceProvider"
+            android:authorities="com.tsng.hidemyapplist.ServiceProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
 
