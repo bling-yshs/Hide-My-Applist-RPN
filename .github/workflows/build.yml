@@ -1,0 +1,58 @@
+name: "构建 (Build)"
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/issue.yml'
+      - '**.md'
+
+jobs:
+  build:
+    name: "构建 (Build)"
+    runs-on: ubuntu-22.04
+    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "检出代码 (Checkout)"
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: "验证 Gradle 包装器 (Gradle Wrapper Validation)"
+        uses: gradle/wrapper-validation-action@v3
+
+      - name: "配置 JDK 环境 (Setup JDK)"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: "缓存 Gradle 文件 (Cache Gradle)"
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: "Gradle 预构建 (Gradle Prebuild)"
+        run: |
+          echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
+          ./gradlew prebuild
+
+      - name: "构建调试版本 (Build Debug)"
+        id: buildDebug
+        run: |
+          ./gradlew :app:buildDebug
+          echo "debugName=$(ls app/build/apk/debug/HMA*-debug.apk | awk -F '(/|.apk)' '{print $5}')" >> $GITHUB_OUTPUT
+
+      - name: "上传调试版本 (Upload Debug)"
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.buildDebug.outputs.debugName }}
+          path: "app/build/apk/debug/HMA*-debug.apk"
