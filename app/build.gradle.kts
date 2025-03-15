@@ -19,7 +19,7 @@ if (officialBuild) {
 }
 
 android {
-    namespace = "com.rpn.erwbxk"
+    namespace = "com.tsng.hidemyapplist"
 
     buildFeatures {
         buildConfig = true
